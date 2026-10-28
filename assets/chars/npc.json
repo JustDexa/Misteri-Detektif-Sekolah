@@ -1,0 +1,86 @@
+{
+ "bu_rina": {
+  "name": "Bu Rina",
+  "ciri": "kerudung"
+ },
+ "pak_joko": {
+  "name": "Pak Joko",
+  "ciri": "topi"
+ },
+ "dodi": {
+  "name": "Dodi",
+  "ciri": "tas"
+ },
+ "nisa": {
+  "name": "Nisa",
+  "ciri": "kacamata"
+ },
+ "pak_harun": {
+  "name": "Pak Harun",
+  "ciri": "topi"
+ },
+ "bu_wati": {
+  "name": "Bu Wati",
+  "ciri": "lain"
+ },
+ "mas_parkir": {
+  "name": "Mas Parkir",
+  "ciri": "lain"
+ },
+ "anak_layangan": {
+  "name": "Rara",
+  "ciri": "kuncir"
+ },
+ "bima": {
+  "name": "Bima",
+  "ciri": "kacamata"
+ },
+ "bu_sri": {
+  "name": "Bu Sri",
+  "ciri": "kerudung"
+ },
+ "pedagang_buah": {
+  "name": "Pak Darto",
+  "ciri": "topi"
+ },
+ "ibu_pembeli": {
+  "name": "Bu Lastri",
+  "ciri": "tas"
+ },
+ "anak_pedagang": {
+  "name": "Ayu",
+  "ciri": "kuncir"
+ },
+ "tukang_becak": {
+  "name": "Pak Min",
+  "ciri": "lain"
+ },
+ "tari": {
+  "name": "Tari",
+  "ciri": "kacamata"
+ },
+ "pak_hadi": {
+  "name": "Pak Hadi",
+  "ciri": "lain"
+ },
+ "pemandu": {
+  "name": "Kak Wulan",
+  "ciri": "topi"
+ },
+ "pengunjung": {
+  "name": "Bu Ratna",
+  "ciri": "tas"
+ },
+ "anak_rombongan": {
+  "name": "Sinta",
+  "ciri": "kuncir"
+ },
+ "satpam": {
+  "name": "Pak Satpam",
+  "ciri": "lain"
+ },
+ "arga": {
+  "name": "Kak Arga",
+  "ciri": "kacamata"
+ }
+}

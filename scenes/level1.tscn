@@ -1,0 +1,811 @@
+[gd_scene load_steps=102 format=3]
+
+[ext_resource type="Script" path="res://scripts/level1.gd" id="1_r"]
+[ext_resource type="Texture2D" path="res://assets/maps/sekolah_peta.png" id="2_r"]
+[ext_resource type="Texture2D" path="res://assets/maps/sekolah_atas.png" id="3_r"]
+[ext_resource type="Texture2D" path="res://assets/items/sapu.png" id="4_r"]
+[ext_resource type="Texture2D" path="res://assets/items/poster1.png" id="5_r"]
+[ext_resource type="Texture2D" path="res://assets/items/jejak.png" id="6_r"]
+[ext_resource type="Texture2D" path="res://assets/chars/npc_bu_rina.png" id="7_r"]
+[ext_resource type="Texture2D" path="res://assets/chars/npc_pak_joko.png" id="8_r"]
+[ext_resource type="Texture2D" path="res://assets/chars/npc_dodi.png" id="9_r"]
+[ext_resource type="Texture2D" path="res://assets/chars/npc_nisa.png" id="10_r"]
+
+[sub_resource type="RectangleShape2D" id="Rect_0"]
+size = Vector2(480, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_2"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_3"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_4"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_5"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_6"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_7"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_8"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_9"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_10"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_11"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_12"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_13"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_14"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_15"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_16"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_17"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_18"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_19"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_20"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_21"]
+size = Vector2(64, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_22"]
+size = Vector2(112, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_23"]
+size = Vector2(96, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_24"]
+size = Vector2(80, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_25"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_26"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_27"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_28"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_29"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_30"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_31"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_32"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_33"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_34"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_35"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_36"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_37"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_38"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_39"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_40"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_41"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_42"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_43"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_44"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_45"]
+size = Vector2(480, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_46"]
+size = Vector2(17, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_47"]
+size = Vector2(17, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_48"]
+size = Vector2(17, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_49"]
+size = Vector2(17, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_50"]
+size = Vector2(17, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_51"]
+size = Vector2(17, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_52"]
+size = Vector2(25, 11)
+
+[sub_resource type="RectangleShape2D" id="Rect_53"]
+size = Vector2(14, 27)
+
+[sub_resource type="RectangleShape2D" id="Rect_54"]
+size = Vector2(27, 20)
+
+[sub_resource type="RectangleShape2D" id="Rect_55"]
+size = Vector2(12, 9)
+
+[sub_resource type="RectangleShape2D" id="Rect_56"]
+size = Vector2(12, 9)
+
+[sub_resource type="RectangleShape2D" id="Rect_57"]
+size = Vector2(83, 12)
+
+[sub_resource type="RectangleShape2D" id="Rect_58"]
+size = Vector2(44, 12)
+
+[sub_resource type="RectangleShape2D" id="Rect_59"]
+size = Vector2(44, 7)
+
+[sub_resource type="RectangleShape2D" id="Rect_60"]
+size = Vector2(44, 12)
+
+[sub_resource type="RectangleShape2D" id="Rect_61"]
+size = Vector2(44, 7)
+
+[sub_resource type="RectangleShape2D" id="Rect_62"]
+size = Vector2(9, 6)
+
+[sub_resource type="RectangleShape2D" id="Rect_63"]
+size = Vector2(9, 9)
+
+[sub_resource type="RectangleShape2D" id="Rect_64"]
+size = Vector2(9, 9)
+
+[sub_resource type="RectangleShape2D" id="Rect_65"]
+size = Vector2(16, 14)
+
+[sub_resource type="RectangleShape2D" id="Rect_66"]
+size = Vector2(16, 14)
+
+[sub_resource type="RectangleShape2D" id="Rect_67"]
+size = Vector2(40, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_68"]
+size = Vector2(12, 9)
+
+[sub_resource type="RectangleShape2D" id="Rect_69"]
+size = Vector2(70, 24)
+
+[sub_resource type="RectangleShape2D" id="Rect_70"]
+size = Vector2(22, 24)
+
+[sub_resource type="RectangleShape2D" id="Rect_71"]
+size = Vector2(4, 8)
+
+[sub_resource type="RectangleShape2D" id="Rect_72"]
+size = Vector2(80, 41)
+
+[sub_resource type="RectangleShape2D" id="Rect_73"]
+size = Vector2(12, 9)
+
+[sub_resource type="RectangleShape2D" id="Rect_74"]
+size = Vector2(112, 96)
+
+[sub_resource type="RectangleShape2D" id="Rect_75"]
+size = Vector2(144, 96)
+
+[sub_resource type="RectangleShape2D" id="Rect_76"]
+size = Vector2(112, 96)
+
+[sub_resource type="RectangleShape2D" id="Rect_77"]
+size = Vector2(27, 24)
+
+[sub_resource type="RectangleShape2D" id="Rect_78"]
+size = Vector2(40, 22)
+
+[sub_resource type="RectangleShape2D" id="Rect_79"]
+size = Vector2(83, 20)
+
+[sub_resource type="RectangleShape2D" id="Rect_80"]
+size = Vector2(12, 11)
+
+[sub_resource type="RectangleShape2D" id="Rect_81"]
+size = Vector2(70, 27)
+
+[sub_resource type="RectangleShape2D" id="Rect_82"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_83"]
+size = Vector2(20, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_84"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_85"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_86"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_87"]
+size = Vector2(12, 5)
+
+[sub_resource type="RectangleShape2D" id="Rect_88"]
+size = Vector2(12, 5)
+
+[sub_resource type="RectangleShape2D" id="Rect_89"]
+size = Vector2(12, 5)
+
+[sub_resource type="RectangleShape2D" id="Rect_90"]
+size = Vector2(12, 5)
+
+[node name="Level1Sekolah" type="Node2D"]
+script = ExtResource("1_r")
+
+[node name="Peta" type="Sprite2D" parent="."]
+texture = ExtResource("2_r")
+centered = false
+
+[node name="Tabrakan" type="StaticBody2D" parent="."]
+
+[node name="Kotak0" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(240, 8)
+shape = SubResource("Rect_0")
+
+[node name="Kotak1" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 24)
+shape = SubResource("Rect_1")
+
+[node name="Kotak2" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(168, 24)
+shape = SubResource("Rect_2")
+
+[node name="Kotak3" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(312, 24)
+shape = SubResource("Rect_3")
+
+[node name="Kotak4" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 24)
+shape = SubResource("Rect_4")
+
+[node name="Kotak5" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 40)
+shape = SubResource("Rect_5")
+
+[node name="Kotak6" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(168, 40)
+shape = SubResource("Rect_6")
+
+[node name="Kotak7" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(312, 40)
+shape = SubResource("Rect_7")
+
+[node name="Kotak8" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 40)
+shape = SubResource("Rect_8")
+
+[node name="Kotak9" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 56)
+shape = SubResource("Rect_9")
+
+[node name="Kotak10" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(168, 56)
+shape = SubResource("Rect_10")
+
+[node name="Kotak11" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(312, 56)
+shape = SubResource("Rect_11")
+
+[node name="Kotak12" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 56)
+shape = SubResource("Rect_12")
+
+[node name="Kotak13" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 72)
+shape = SubResource("Rect_13")
+
+[node name="Kotak14" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(168, 72)
+shape = SubResource("Rect_14")
+
+[node name="Kotak15" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(312, 72)
+shape = SubResource("Rect_15")
+
+[node name="Kotak16" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 72)
+shape = SubResource("Rect_16")
+
+[node name="Kotak17" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 88)
+shape = SubResource("Rect_17")
+
+[node name="Kotak18" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(168, 88)
+shape = SubResource("Rect_18")
+
+[node name="Kotak19" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(312, 88)
+shape = SubResource("Rect_19")
+
+[node name="Kotak20" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 88)
+shape = SubResource("Rect_20")
+
+[node name="Kotak21" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(32, 104)
+shape = SubResource("Rect_21")
+
+[node name="Kotak22" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(152, 104)
+shape = SubResource("Rect_22")
+
+[node name="Kotak23" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(320, 104)
+shape = SubResource("Rect_23")
+
+[node name="Kotak24" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(440, 104)
+shape = SubResource("Rect_24")
+
+[node name="Kotak25" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 120)
+shape = SubResource("Rect_25")
+
+[node name="Kotak26" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 120)
+shape = SubResource("Rect_26")
+
+[node name="Kotak27" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 136)
+shape = SubResource("Rect_27")
+
+[node name="Kotak28" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 136)
+shape = SubResource("Rect_28")
+
+[node name="Kotak29" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 152)
+shape = SubResource("Rect_29")
+
+[node name="Kotak30" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 152)
+shape = SubResource("Rect_30")
+
+[node name="Kotak31" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 168)
+shape = SubResource("Rect_31")
+
+[node name="Kotak32" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 168)
+shape = SubResource("Rect_32")
+
+[node name="Kotak33" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 184)
+shape = SubResource("Rect_33")
+
+[node name="Kotak34" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 184)
+shape = SubResource("Rect_34")
+
+[node name="Kotak35" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 200)
+shape = SubResource("Rect_35")
+
+[node name="Kotak36" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 200)
+shape = SubResource("Rect_36")
+
+[node name="Kotak37" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 216)
+shape = SubResource("Rect_37")
+
+[node name="Kotak38" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 216)
+shape = SubResource("Rect_38")
+
+[node name="Kotak39" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 232)
+shape = SubResource("Rect_39")
+
+[node name="Kotak40" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 232)
+shape = SubResource("Rect_40")
+
+[node name="Kotak41" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 248)
+shape = SubResource("Rect_41")
+
+[node name="Kotak42" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 248)
+shape = SubResource("Rect_42")
+
+[node name="Kotak43" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(8, 264)
+shape = SubResource("Rect_43")
+
+[node name="Kotak44" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(472, 264)
+shape = SubResource("Rect_44")
+
+[node name="Kotak45" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(240, 280)
+shape = SubResource("Rect_45")
+
+[node name="Kotak46" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(38.5, 41)
+shape = SubResource("Rect_46")
+
+[node name="Kotak47" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(80.5, 41)
+shape = SubResource("Rect_47")
+
+[node name="Kotak48" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(121.5, 41)
+shape = SubResource("Rect_48")
+
+[node name="Kotak49" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(38.5, 67)
+shape = SubResource("Rect_49")
+
+[node name="Kotak50" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(80.5, 67)
+shape = SubResource("Rect_50")
+
+[node name="Kotak51" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(121.5, 67)
+shape = SubResource("Rect_51")
+
+[node name="Kotak52" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(31.5, 24.5)
+shape = SubResource("Rect_52")
+
+[node name="Kotak53" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(151, 29.5)
+shape = SubResource("Rect_53")
+
+[node name="Kotak54" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(189.5, 26)
+shape = SubResource("Rect_54")
+
+[node name="Kotak55" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(287, 26.5)
+shape = SubResource("Rect_55")
+
+[node name="Kotak56" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(183, 74.5)
+shape = SubResource("Rect_56")
+
+[node name="Kotak57" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(370.5, 25)
+shape = SubResource("Rect_57")
+
+[node name="Kotak58" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(362, 57)
+shape = SubResource("Rect_58")
+
+[node name="Kotak59" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(362, 70.5)
+shape = SubResource("Rect_59")
+
+[node name="Kotak60" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(426, 57)
+shape = SubResource("Rect_60")
+
+[node name="Kotak61" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(426, 70.5)
+shape = SubResource("Rect_61")
+
+[node name="Kotak62" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(183.5, 142)
+shape = SubResource("Rect_62")
+
+[node name="Kotak63" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(47.5, 149.5)
+shape = SubResource("Rect_63")
+
+[node name="Kotak64" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(415.5, 149.5)
+shape = SubResource("Rect_64")
+
+[node name="Kotak65" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(360, 120)
+shape = SubResource("Rect_65")
+
+[node name="Kotak66" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(392, 120)
+shape = SubResource("Rect_66")
+
+[node name="Kotak67" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(292, 258)
+shape = SubResource("Rect_67")
+
+[node name="Kotak68" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(343, 128.5)
+shape = SubResource("Rect_68")
+
+[node name="Kotak69" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(63, 192)
+shape = SubResource("Rect_69")
+
+[node name="Kotak70" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(31, 240)
+shape = SubResource("Rect_70")
+
+[node name="Kotak71" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(116, 175)
+shape = SubResource("Rect_71")
+
+[node name="Kotak72" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(408, 196.5)
+shape = SubResource("Rect_72")
+
+[node name="Kotak73" type="CollisionShape2D" parent="Tabrakan"]
+position = Vector2(442, 236.5)
+shape = SubResource("Rect_73")
+
+[node name="Zona" type="Node2D" parent="."]
+
+[node name="parkiran" type="Area2D" parent="Zona"]
+position = Vector2(72, 224)
+monitoring = false
+monitorable = false
+
+[node name="Bentuk" type="CollisionShape2D" parent="Zona/parkiran"]
+shape = SubResource("Rect_74")
+debug_color = Color(0.99, 0.9, 0.3, 0.25)
+
+[node name="kantin" type="Area2D" parent="Zona"]
+position = Vector2(392, 64)
+monitoring = false
+monitorable = false
+
+[node name="Bentuk" type="CollisionShape2D" parent="Zona/kantin"]
+shape = SubResource("Rect_75")
+debug_color = Color(0.99, 0.9, 0.3, 0.25)
+
+[node name="gudang" type="Area2D" parent="Zona"]
+position = Vector2(408, 224)
+monitoring = false
+monitorable = false
+
+[node name="Bentuk" type="CollisionShape2D" parent="Zona/gudang"]
+shape = SubResource("Rect_76")
+debug_color = Color(0.99, 0.9, 0.3, 0.25)
+
+[node name="Benda" type="Node2D" parent="."]
+
+[node name="lemari_piala" type="Area2D" parent="Benda"]
+position = Vector2(189.5, 28)
+monitoring = false
+monitorable = false
+metadata/kind = "inspect"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/lemari_piala"]
+shape = SubResource("Rect_77")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="papan_pengumuman" type="Area2D" parent="Benda"]
+position = Vector2(244, 11)
+monitoring = false
+monitorable = false
+metadata/kind = "inspect"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/papan_pengumuman"]
+shape = SubResource("Rect_78")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="etalase" type="Area2D" parent="Benda"]
+position = Vector2(370.5, 26)
+monitoring = false
+monitorable = false
+metadata/kind = "inspect"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/etalase"]
+shape = SubResource("Rect_79")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="tiang_bendera" type="Area2D" parent="Benda"]
+position = Vector2(183, 139.5)
+monitoring = false
+monitorable = false
+metadata/kind = "inspect"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/tiang_bendera"]
+shape = SubResource("Rect_80")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="motor" type="Area2D" parent="Benda"]
+position = Vector2(63, 193.5)
+monitoring = false
+monitorable = false
+metadata/kind = "inspect"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/motor"]
+shape = SubResource("Rect_81")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="kucing" type="Area2D" parent="Benda"]
+position = Vector2(88, 236)
+monitoring = false
+monitorable = false
+metadata/kind = "inspect"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/kucing"]
+shape = SubResource("Rect_82")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="gudang_pintu" type="Area2D" parent="Benda"]
+position = Vector2(405, 220)
+monitoring = false
+monitorable = false
+metadata/kind = "door"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/gudang_pintu"]
+shape = SubResource("Rect_83")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="item_sapu" type="Area2D" parent="Benda"]
+position = Vector2(430, 238)
+monitoring = false
+monitorable = false
+metadata/kind = "item"
+metadata/item = "sapu"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/item_sapu"]
+shape = SubResource("Rect_84")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="Ikon" type="Sprite2D" parent="Benda/item_sapu"]
+texture = ExtResource("4_r")
+position = Vector2(0, -1)
+modulate = Color(1, 1, 1, 0.6)
+
+[node name="item_poster1" type="Area2D" parent="Benda"]
+position = Vector2(379, 241)
+monitoring = false
+monitorable = false
+metadata/kind = "item"
+metadata/item = "poster1"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/item_poster1"]
+shape = SubResource("Rect_85")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="Ikon" type="Sprite2D" parent="Benda/item_poster1"]
+texture = ExtResource("5_r")
+position = Vector2(0, -1)
+modulate = Color(1, 1, 1, 0.6)
+
+[node name="item_jejak" type="Area2D" parent="Benda"]
+position = Vector2(366, 219)
+monitoring = false
+monitorable = false
+metadata/kind = "item"
+metadata/item = "jejak"
+
+[node name="Bentuk" type="CollisionShape2D" parent="Benda/item_jejak"]
+shape = SubResource("Rect_86")
+debug_color = Color(0.2, 0.9, 1, 0.3)
+
+[node name="Ikon" type="Sprite2D" parent="Benda/item_jejak"]
+texture = ExtResource("6_r")
+position = Vector2(0, -1)
+modulate = Color(1, 1, 1, 0.6)
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="bu_rina" type="Node2D" parent="Entities"]
+position = Vector2(214, 228)
+
+[node name="Sprite" type="Sprite2D" parent="Entities/bu_rina"]
+texture = ExtResource("7_r")
+centered = false
+offset = Vector2(-8, -23)
+hframes = 2
+
+[node name="Badan" type="StaticBody2D" parent="Entities/bu_rina"]
+
+[node name="Bentuk" type="CollisionShape2D" parent="Entities/bu_rina/Badan"]
+position = Vector2(0, -2.5)
+shape = SubResource("Rect_87")
+
+[node name="pak_joko" type="Node2D" parent="Entities"]
+position = Vector2(232, 153)
+
+[node name="Sprite" type="Sprite2D" parent="Entities/pak_joko"]
+texture = ExtResource("8_r")
+centered = false
+offset = Vector2(-8, -23)
+hframes = 2
+
+[node name="Badan" type="StaticBody2D" parent="Entities/pak_joko"]
+
+[node name="Bentuk" type="CollisionShape2D" parent="Entities/pak_joko/Badan"]
+position = Vector2(0, -2.5)
+shape = SubResource("Rect_88")
+
+[node name="dodi" type="Node2D" parent="Entities"]
+position = Vector2(148, 204)
+
+[node name="Sprite" type="Sprite2D" parent="Entities/dodi"]
+texture = ExtResource("9_r")
+centered = false
+offset = Vector2(-8, -23)
+hframes = 2
+
+[node name="Badan" type="StaticBody2D" parent="Entities/dodi"]
+
+[node name="Bentuk" type="CollisionShape2D" parent="Entities/dodi/Badan"]
+position = Vector2(0, -2.5)
+shape = SubResource("Rect_89")
+
+[node name="nisa" type="Node2D" parent="Entities"]
+position = Vector2(124, 89)
+
+[node name="Sprite" type="Sprite2D" parent="Entities/nisa"]
+texture = ExtResource("10_r")
+centered = false
+offset = Vector2(-8, -23)
+hframes = 2
+
+[node name="Badan" type="StaticBody2D" parent="Entities/nisa"]
+
+[node name="Bentuk" type="CollisionShape2D" parent="Entities/nisa/Badan"]
+position = Vector2(0, -2.5)
+shape = SubResource("Rect_90")
+
+[node name="SpawnPemain" type="Marker2D" parent="."]
+position = Vector2(240, 262)
+gizmo_extents = 12.0
+
+[node name="Atas" type="Sprite2D" parent="."]
+z_index = 10
+texture = ExtResource("3_r")
+centered = false
