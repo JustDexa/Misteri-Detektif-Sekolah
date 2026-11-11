@@ -77,21 +77,38 @@ func _render() -> void:
 		_render_bukti()
 
 
+## Teks ditaruh tepat di atas garis buku. Garis pada buku_panel.png ada di y = 26, 37, 48, ... (jarak 11),
+## jadi baris ke-n ditulis pada y = BARIS_Y0 + n * 11.
+const BARIS_Y0 := 17.0
+const BARIS_T := 11.0
+const KIRI_X := 14.0
+const KANAN_X := 150.0
+const HAL_W := 120.0
+
+
+func _baris(n: int) -> float:
+	return BARIS_Y0 + n * BARIS_T
+
+
 func _render_kasus() -> void:
-	var lx := 16.0
-	UI.label(page, "KASUS UTAMA", Vector2(lx, 16), UI.C_RUST)
-	UI.label(page, "Alat kebersihan hilang!", Vector2(lx, 27), UI.C_CHOC, 120)
-	UI.label(page, "Detektif: " + Game.player_name, Vector2(lx, 38), UI.C_CHOC, 120)
+	UI.label(page, "KASUS UTAMA", Vector2(KIRI_X, _baris(0)), UI.C_RUST)
+	UI.label(page, "Alat kebersihan hilang!", Vector2(KIRI_X, _baris(1)), UI.C_CHOC)
+	var det := "Detektif: " + Game.player_name
+	if Game.font.get_string_size(det, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x > HAL_W:
+		det = Game.player_name   # nama panjang: tanpa awalan supaya tidak keluar halaman
+	UI.label(page, det, Vector2(KIRI_X, _baris(2)), UI.C_CHOC)
 	var info: Array = Game.LEVEL_INFO[Game.level_index]
-	UI.label(page, "Lokasi: " + info[0], Vector2(lx, 49), UI.C_CHOC, 120)
-	UI.label(page, "Tujuan sekarang:", Vector2(lx, 66), UI.C_RUST)
-	var y := 77.0
-	for row in UI.wrap(objective, 118, Game.font):
-		UI.label(page, row, Vector2(lx, y), UI.C_CHOC)
-		y += 11
-	UI.label(page, "Tanyai orang dan periksa benda.", Vector2(lx, 132), Color("8b9bb4"), 118)
-	var rx := 152.0
-	UI.label(page, "KASUS KECIL", Vector2(rx, 16), UI.C_RUST)
+	UI.label(page, "Lokasi: " + info[0], Vector2(KIRI_X, _baris(3)), UI.C_CHOC)
+	UI.label(page, "Tujuan sekarang:", Vector2(KIRI_X, _baris(5)), UI.C_RUST)
+	var n := 6
+	for row in UI.wrap(objective if objective != "" else "-", HAL_W, Game.font).slice(0, 3):
+		UI.label(page, row, Vector2(KIRI_X, _baris(n)), UI.C_CHOC)
+		n += 1
+	n = 10
+	for row in UI.wrap("Tanyai orang dan periksa benda.", HAL_W, Game.font):
+		UI.label(page, row, Vector2(KIRI_X, _baris(n)), Color("8b9bb4"))
+		n += 1
+	UI.label(page, "KASUS KECIL", Vector2(KANAN_X, _baris(0)), UI.C_RUST)
 	for i in Game.LEVEL_INFO.size():
 		var st := "Belum dimulai"
 		var col := Color("8b9bb4")
@@ -101,20 +118,19 @@ func _render_kasus() -> void:
 		elif i == Game.level_index:
 			st = "Sedang diselidiki"
 			col = UI.C_RUST
-		var yy := 30.0 + i * 25
-		UI.label(page, "%d. %s" % [i + 1, Game.LEVEL_INFO[i][1]], Vector2(rx, yy), UI.C_CHOC)
-		UI.label(page, "   " + st, Vector2(rx, yy + 11), col)
-	UI.label(page, "Bukti terkumpul: %d / %d" % [Game.inventory.size(), Game.ITEM_URUTAN.size()], Vector2(rx, 134), UI.C_CHOC)
+		UI.label(page, "%d. %s" % [i + 1, Game.LEVEL_INFO[i][1]], Vector2(KANAN_X, _baris(1 + i * 2)), UI.C_CHOC)
+		UI.label(page, st, Vector2(KANAN_X + 12, _baris(2 + i * 2)), col)
+	UI.label(page, "Bukti terkumpul: %d / %d" % [Game.inventory.size(), Game.ITEM_URUTAN.size()], Vector2(KANAN_X, _baris(10)), UI.C_CHOC)
 
 
 func _render_bukti() -> void:
-	UI.label(page, "BARANG BUKTI", Vector2(16, 14), UI.C_RUST)
+	UI.label(page, "BARANG BUKTI", Vector2(KIRI_X, _baris(0)), UI.C_RUST)
 	var i := 0
 	for id in Game.ITEM_URUTAN:
 		var has := Game.has_item(id)
 		var b := TextureButton.new()
 		b.texture_normal = load(UI.UI + ("slot_isi.png" if has else "slot_kosong.png"))
-		b.position = Vector2(18 + (i % 4) * 29, 28 + (i / 4) * 29)
+		b.position = Vector2(17 + (i % 4) * 29, 31 + (i / 4) * 29)
 		b.focus_mode = Control.FOCUS_NONE
 		if has:
 			b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -127,13 +143,19 @@ func _render_bukti() -> void:
 			b.pressed.connect(_show_detail.bind(id))
 		page.add_child(b)
 		i += 1
-	UI.label(page, "Arahkan kursor ke bukti untuk membaca.", Vector2(16, 132), Color("8b9bb4"), 118)
+	var n := 10
+	for row in UI.wrap("Arahkan kursor ke bukti untuk membaca.", HAL_W, Game.font):
+		UI.label(page, row, Vector2(KIRI_X, _baris(n)), Color("8b9bb4"))
+		n += 1
 	detail = Control.new()
 	page.add_child(detail)
 	if Game.inventory.size() > 0:
 		_show_detail(Game.inventory[Game.inventory.size() - 1])
 	else:
-		UI.label(detail, "Belum ada bukti. Terus selidiki!", Vector2(152, 60), UI.C_CHOC, 118, HORIZONTAL_ALIGNMENT_CENTER)
+		n = 4
+		for row in UI.wrap("Belum ada bukti. Terus selidiki!", HAL_W, Game.font):
+			UI.label(detail, row, Vector2(KANAN_X, _baris(n)), UI.C_CHOC, HAL_W, HORIZONTAL_ALIGNMENT_CENTER)
+			n += 1
 
 
 func _show_detail(id: String) -> void:
@@ -141,16 +163,16 @@ func _show_detail(id: String) -> void:
 		c.queue_free()
 	var ic := TextureRect.new()
 	ic.texture = load("res://assets/items/%s.png" % id)
-	ic.position = Vector2(195, 18)
+	ic.position = Vector2(KANAN_X + HAL_W / 2.0 - 16, 19)
 	ic.scale = Vector2(2, 2)
 	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	detail.add_child(ic)
 	var info: Array = Game.ITEMS[id]
-	UI.label(detail, info[0], Vector2(150, 56), UI.C_RUST, 122, HORIZONTAL_ALIGNMENT_CENTER)
-	var y := 70.0
-	for row in UI.wrap(info[1], 118, Game.font):
-		UI.label(detail, row, Vector2(152, y), UI.C_CHOC)
-		y += 11
+	UI.label(detail, info[0], Vector2(KANAN_X, _baris(4)), UI.C_RUST, HAL_W, HORIZONTAL_ALIGNMENT_CENTER)
+	var n := 5
+	for row in UI.wrap(info[1], HAL_W, Game.font).slice(0, 7):
+		UI.label(detail, row, Vector2(KANAN_X, _baris(n)), UI.C_CHOC)
+		n += 1
 
 
 func _input(event: InputEvent) -> void:

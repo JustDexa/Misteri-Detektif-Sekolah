@@ -1,9 +1,24 @@
 extends Control
-## Ending: sobekan poster disusun, Klub Peduli Lingkungan muncul, lalu menuju Rapor Detektif.
+## Ending: sobekan poster disusun, Klub Peduli Lingkungan muncul, Rapat Detektif, lalu menuju Rapor Detektif.
+##
+## RAPAT DETEKTIF (Game.RAPAT_DETEKTIF): empat pertanyaan singkat dari Kiki, satu per pilar, masing-masing
+## punya satu jawaban yang bisa dipertanggungjawabkan. Diletakkan di AKHIR cerita supaya pilihan jawabannya
+## tidak mengajari strategi untuk pengukuran perilaku mana pun. Bobotnya separuh perilaku (Game.BOBOT_RAPAT).
 
 const UI = preload("res://scripts/ui_kit.gd")
 const FX = preload("res://scripts/fx.gd")
 signal ditekan
+## Pilihan pertama selalu jawaban yang dinilai sesuai pilar (kode "benar"); urutannya diacak saat tampil.
+const RAPAT := [
+	{"pilar": "pola", "tanya": "Orang-orang yang memberi kita petunjuk punya satu ciri yang sama. Apa cirinya?",
+		"opsi": [["benar", "Semuanya berkacamata"], ["topi", "Semuanya memakai topi"], ["tas", "Semuanya membawa tas"], ["tidak", "Tidak ada yang sama"]]},
+	{"pilar": "abstraksi", "tanya": "Aku mau menulis laporan singkat. Mana yang paling penting untuk ditulis?",
+		"opsi": [["benar", "Empat alat hilang dan sobekan poster"], ["kucing", "Kucing oranye tidur di parkiran"], ["roti", "Roti bakar di kafe museum wangi"], ["layangan", "Layangan di taman terbang tinggi"]]},
+	{"pilar": "algoritma", "tanya": "Minggu nanti kita ikut Aksi Bersih Kota. Urutan kerja mana yang paling tepat?",
+		"opsi": [["benar", "Siapkan alat, bersihkan, kembalikan alat"], ["acak1", "Bersihkan, siapkan alat, kembalikan alat"], ["acak2", "Kembalikan alat, siapkan alat, bersihkan"]]},
+	{"pilar": "dekomposisi", "tanya": "Kasus besar \"alat kebersihan hilang\" tadi kita selesaikan dengan cara apa?",
+		"opsi": [["benar", "Dipecah jadi empat kasus kecil"], ["tebak", "Langsung menebak pelakunya"], ["sekaligus", "Mencari semua alat sekaligus"]]},
+]
 var args := {}
 var dialog
 var ending_img: TextureRect
@@ -15,6 +30,7 @@ var _t := 0.0
 
 func _ready() -> void:
 	size = Vector2(320, 180)
+	Game.hapus_catatan_level(Game.LEVEL_RAPAT)   # ending diulang: jawaban rapat lama diganti
 	var bg := ColorRect.new()
 	bg.color = Color("262b44")
 	bg.size = size
@@ -86,6 +102,8 @@ func _run() -> void:
 		["arga:senang", "Kamu jeli sekali bisa menemukan semuanya. Mau ikut Aksi Bersih Kota bersama kami?"],
 		["pemain:senang", "Tentu saja! Kasus ditutup!"],
 	])
+	if Game.RAPAT_DETEKTIF and Game.PARTNER_AKTIF:
+		await _rapat()
 	var dimr := ColorRect.new()
 	dimr.color = Color(0.094, 0.078, 0.145, 0.0)
 	dimr.size = size
@@ -104,6 +122,32 @@ func _run() -> void:
 	ts.tween_interval(1.8)
 	await ts.finished
 	Game.change("res://scripts/rapor.gd")
+
+
+func _rapat() -> void:
+	stage = "rapat"
+	dialog.set_top(false)
+	await dialog.say([
+		["kiki:senang", "Kasus hampir ditutup! Sebelum itu, bantu aku mengisi laporan detektif, yuk."],
+		["kiki", "Ada empat pertanyaan singkat. Jawab menurut pendapatmu sendiri, ya!"],
+	])
+	for q in RAPAT:
+		var urut: Array = q["opsi"].duplicate()
+		if not Game.autotest:
+			urut.shuffle()
+		var auto_kode: String = Game.auto_jawab.get("R." + q["pilar"], "benar")
+		var auto := 0
+		var teks := []
+		for i in urut.size():
+			teks.append(urut[i][1])
+			if urut[i][0] == auto_kode:
+				auto = i
+		var pilih: int = await dialog.tanya("kiki", q["tanya"], teks, auto)
+		Game.catat_rapat(q["pilar"], urut[pilih][0] == "benar", "jawab: %s" % urut[pilih][1],
+			"Rapat: kamu menjawab \"%s\"." % urut[pilih][1])
+	await dialog.say([["kiki:senang", "Laporan lengkap! Terima kasih, Detektif {nama}."]])
+	Game.save_profil()
+	stage = "stempel"
 
 
 func _tunggu_tekan() -> void:

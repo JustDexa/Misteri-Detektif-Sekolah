@@ -729,7 +729,7 @@ position = Vector2(0, -2.5)
 shape = SubResource("Rect_86")
 
 [node name="pemandu" type="Node2D" parent="Entities"]
-position = Vector2(198, 243)
+position = Vector2(210, 258)
 
 [node name="Sprite" type="Sprite2D" parent="Entities/pemandu"]
 texture = ExtResource("5_r")
@@ -789,7 +789,7 @@ position = Vector2(0, -2.5)
 shape = SubResource("Rect_90")
 
 [node name="arga" type="Node2D" parent="Entities"]
-position = Vector2(220, 196)
+position = Vector2(240, 226)
 
 [node name="Sprite" type="Sprite2D" parent="Entities/arga"]
 texture = ExtResource("9_r")

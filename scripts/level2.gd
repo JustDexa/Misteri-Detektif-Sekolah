@@ -2,6 +2,8 @@ extends "res://scripts/level_base.gd"
 ## LEVEL 2 — TAMAN KOTA. Kasus: selang penyiram hilang.
 ## Diukur: ALGORITMA (instruksi Bu Wati: parkiran -> air mancur -> gazebo; gazebo sengaja paling dekat).
 ## Fase belajar POLA kedua: yang tahu letak selang adalah NPC berkacamata (Bima) — belum dinilai.
+## Partner: tepat setelah instruksi, Kiki mengajak mengambil jalan pintas (Game.GODAAN_PARTNER), lalu diam.
+##          Setelah urutan dicatat (berhasil ataupun tidak), Kiki menanyakan alasannya.
 
 
 func _init() -> void:
@@ -51,6 +53,9 @@ func _on_interact(id: String, _kind: String) -> void:
 				set_objective("Ikuti saran Bu Wati")
 				ukur_urutan("algoritma", ["parkir", "air_mancur", "gazebo"], "Rute Bu Wati")
 				reveal("item_daftar")
+				if partner != null and Game.GODAAN_PARTNER:
+					m_seq["godaan"] = true
+					await kata_partner(["Eh, gazebo kelihatan dekat sekali dari sini. Langsung ke sana saja, yuk?"])
 			else:
 				await say([["bu_wati", "Mas Parkir dulu, lalu air mancur, baru gazebo. Semangat, Dik!"]])
 		"mas_parkir":
@@ -96,6 +101,21 @@ func _on_interact(id: String, _kind: String) -> void:
 			await selesai_level()
 		_:
 			await inspek(id)
+
+func _alasan(momen: String, info: Dictionary) -> Dictionary:
+	if momen != "L2.algoritma":
+		return {}
+	if info.get("berhasil", false):
+		return {"tanya": "Kenapa tadi kita lewat urutan itu?", "opsi": [
+			["instruksi", "Mengikuti urutan dari Bu Wati"],
+			["searah", "Kebetulan jalannya searah"],
+			["asal", "Asal jalan saja"]]}
+	var opsi := [["dekat", "Tempat ini lebih dekat"], ["lupa", "Aku lupa urutannya"]]
+	if Game.GODAAN_PARTNER:
+		opsi.append(["ajakan", "Tadi kamu yang mengajak"])
+	opsi.append(["asal", "Asal jalan saja"])
+	return {"tanya": "Eh, Detektif, kenapa kita ke sini dulu?", "opsi": opsi}
+
 
 func _dekor() -> void:
 	FX.fountain(self, Vector2(232, 37))

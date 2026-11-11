@@ -37,13 +37,16 @@ static func rect(parent: Node, path: String, pos: Vector2) -> TextureRect:
 	return r
 
 
-static func nine(parent: Node, path: String, margin: int, pos: Vector2, size: Vector2) -> NinePatchRect:
+## margin_kb = margin sisi kanan & bawah bila berbeda. Kotak krem/gelap/papan nama punya 1 kolom/baris bayangan
+## di dalam bingkai kanan-bawah; bila ikut diregangkan, bayangan itu melebar jadi pita. Pakai margin 4 dan
+## margin_kb 5 untuk kotak-kotak tersebut.
+static func nine(parent: Node, path: String, margin: int, pos: Vector2, size: Vector2, margin_kb := -1) -> NinePatchRect:
 	var n := NinePatchRect.new()
 	n.texture = load(path)
 	n.patch_margin_left = margin
-	n.patch_margin_right = margin
+	n.patch_margin_right = margin if margin_kb < 0 else margin_kb
 	n.patch_margin_top = margin
-	n.patch_margin_bottom = margin
+	n.patch_margin_bottom = margin if margin_kb < 0 else margin_kb
 	n.position = pos
 	n.size = size
 	n.mouse_filter = Control.MOUSE_FILTER_IGNORE

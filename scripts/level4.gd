@@ -5,6 +5,8 @@ extends "res://scripts/level_base.gd"
 ##   2. ABSTRAKSI      : setelah cerita Kak Arga, lokasi pertama di antara suvenir / kafe / pos satpam
 ##   3. ALGORITMA      : instruksi Pak Satpam ruang fosil -> ruang batik -> gudang
 ##   4. DEKOMPOSISI 2  : TKP gudang museum
+## Partner: ini kesempatan TERAKHIR tiap pilar, jadi Kiki menanyakan alasan untuk keempatnya.
+##          Pak Satpam tidak dihitung sebagai "NPC pertama" (wajar bertanya kepada petugas).
 
 const PENGECOH := {
 	"pemandu": "Selamat datang! Rombongan saya sedang melihat koleksi. Kemoceng? Kakak nggak tahu, maaf ya.",
@@ -61,7 +63,7 @@ func _on_interact(id: String, _kind: String) -> void:
 				])
 				flags["mulai"] = true
 				set_objective("Cari orang yang tahu soal kemoceng")
-				ukur_npc_pertama("pola", "arga", ["pak_hadi"], "Museum")
+				ukur_npc_pertama("pola", "arga", ["pak_hadi", "satpam"], "Museum")
 			elif flags.get("kemoceng", false):
 				await say([["pak_hadi", "Luar biasa, Detektif!"]])
 			else:
@@ -87,6 +89,10 @@ func _on_interact(id: String, _kind: String) -> void:
 			if not arga:
 				await say([["satpam", "Selamat siang, Dik. Bapak sedang berjaga. Kemoceng? Coba tanya pengunjung lain dulu, ya."]])
 			elif not rute:
+				# berbicara dengan Pak Satpam = sudah sampai di pos satpam (walau berdiri di luar kotak zona)
+				kunjungi("pos_satpam")
+				await proses_antre()
+				speaker = npcs["satpam"]
 				# ---- INSTRUKSI ALGORITMA
 				await say([
 					["satpam", "Kemoceng? Mungkin ada di gudang. Pintunya tidak Bapak kunci, kok."],
@@ -96,6 +102,9 @@ func _on_interact(id: String, _kind: String) -> void:
 				flags["rute"] = true
 				set_objective("Ikuti petunjuk Pak Satpam")
 				ukur_urutan("algoritma", ["fosil", "batik", "gudang"], "Rute Pak Satpam")
+				if partner != null and Game.GODAAN_PARTNER:
+					m_seq["godaan"] = true
+					await kata_partner(["Pintu gudangnya persis di sebelah sini. Langsung masuk saja, yuk?"])
 			else:
 				await say([["satpam", "Ruang fosil dulu, lalu ruang batik, baru gudang."]])
 		"gudang_museum_pintu":
@@ -103,6 +112,7 @@ func _on_interact(id: String, _kind: String) -> void:
 				await say([["", "Pintu gudang. Tertulis: \"Khusus petugas.\" Sebaiknya kamu bertanya kepada petugas dulu."]])
 				return
 			kunjungi("gudang")
+			await proses_antre()
 			await _masuk_tkp()
 		_:
 			await inspek(id)
@@ -137,3 +147,42 @@ func _masuk_tkp() -> void:
 		await selesai_level()
 	else:
 		await say([["", "Kamu keluar dari gudang. Bukti yang sudah ditemukan tetap tersimpan."]])
+
+
+func _alasan(momen: String, info: Dictionary) -> Dictionary:
+	var umum := [["dekat", "Tempat ini yang paling dekat"], ["jelajah", "Aku mau memeriksa semua tempat"], ["asal", "Asal jalan saja"]]
+	match momen:
+		"L4.pola":
+			var opsi := [["tampak", "Dia kelihatan tahu banyak"]]
+			if info.get("npc", "") == "arga":
+				opsi = [["pola", "Yang tahu petunjuk selalu berkacamata"]]
+			opsi.append_array([["dekat", "Dia yang paling dekat"], ["asal", "Asal pilih saja"]])
+			return {"tanya": "Eh, Detektif, kenapa kita tanya dia duluan?", "opsi": opsi}
+		"L4.abstraksi":
+			var opsi := []
+			match info.get("zona", ""):
+				"pos_satpam":
+					opsi = [["info", "Kata Kak Arga, Pak Satpam memegang kunci gudang"]]
+				"suvenir":
+					opsi = [["basabasi", "Kak Arga cerita soal gantungan kunci di sini"]]
+				"kafe":
+					opsi = [["basabasi", "Kak Arga bilang roti bakarnya wangi"]]
+			opsi.append_array(umum)
+			return {"tanya": "Eh, Detektif, kenapa kita ke sini dulu?", "opsi": opsi}
+		"L4.algoritma":
+			if info.get("berhasil", false):
+				return {"tanya": "Kenapa tadi kita lewat urutan itu?", "opsi": [
+					["instruksi", "Mengikuti urutan dari Pak Satpam"],
+					["searah", "Kebetulan jalannya searah"],
+					["asal", "Asal jalan saja"]]}
+			var opsi := [["dekat", "Tempat ini lebih dekat"], ["lupa", "Aku lupa urutannya"]]
+			if Game.GODAAN_PARTNER:
+				opsi.append(["ajakan", "Tadi kamu yang mengajak"])
+			opsi.append(["asal", "Asal jalan saja"])
+			return {"tanya": "Eh, Detektif, kenapa kita ke sini dulu?", "opsi": opsi}
+		"L4.dekomposisi":
+			return {"tanya": "Tadi kamu mencarinya dengan cara apa?", "opsi": [
+				["bagi", "Kubagi jadi beberapa bagian, kuperiksa satu-satu"],
+				["curiga", "Kucari benda yang paling mencurigakan"],
+				["asal", "Kuklik saja semuanya"]]}
+	return {}

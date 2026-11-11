@@ -30,7 +30,10 @@ func _ready() -> void:
 	for i in 4:
 		_card(i)
 		FX.slide_in(cards[i], Vector2(0, 150), 0.15 + i * 0.09, 0.5)
-	UI.label(self, "Detektif: " + Game.player_name, Vector2(0, 168), Color("c0cbdc"), 320, HORIZONTAL_ALIGNMENT_CENTER)
+	var kaki := "Detektif: " + Game.player_name
+	if not Game.level_done.is_empty():
+		kaki += "  -  level yang selesai boleh diulang"
+	UI.label(self, kaki, Vector2(0, 167), Color("c0cbdc"), 320, HORIZONTAL_ALIGNMENT_CENTER)
 	toast = UI.label(self, "", Vector2(40, 28), Color("fee761"), 240, HORIZONTAL_ALIGNMENT_CENTER, UI.C_BLACK)
 	Game.play_bgm("bgm_menu")
 
@@ -47,6 +50,8 @@ func _card(i: int) -> void:
 		b.texture_pressed = load(UI.UI + "kartu_pilih_hover.png")
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		b.mouse_entered.connect(func(): Game.sfx("sfx_hover"))
+		b.mouse_entered.connect(FX.lift.bind(b, true))
+		b.mouse_exited.connect(FX.lift.bind(b, false))
 	else:
 		b.texture_normal = load(UI.UI + "kartu_pilih_kunci.png")
 	b.pressed.connect(_pilih.bind(i))
@@ -56,8 +61,13 @@ func _card(i: int) -> void:
 	if not buka:
 		thumb.modulate = Color(0.35, 0.35, 0.45)
 		UI.rect(b, UI.UI + "ikon_gembok.png", Vector2(31, 23))
-	UI.label(b, "LEVEL %d" % (i + 1), Vector2(71, 9), Color("feae34") if buka else Color("8b9bb4"))
-	UI.label(b, Game.LEVEL_INFO[i][0], Vector2(71, 20), Color.WHITE if buka else Color("8b9bb4"))
+	# Kolom teks: x 71..134 (lebar 63). Nama yang lebih lebar (mis. "Pasar Rakyat") dipecah jadi dua baris
+	# supaya tidak menabrak bingkai kartu. Status selalu di baris yang sama pada semua kartu.
+	UI.label(b, "LEVEL %d" % (i + 1), Vector2(70, 8), Color("feae34") if buka else Color("8b9bb4"))
+	var ny := 19.0
+	for row in UI.wrap(Game.LEVEL_INFO[i][0], 63, Game.font).slice(0, 2):
+		UI.label(b, row, Vector2(70, ny), Color.WHITE if buka else Color("8b9bb4"))
+		ny += 10
 	var st := "Siap main"
 	var col := Color("c0cbdc")
 	if selesai:
@@ -67,9 +77,7 @@ func _card(i: int) -> void:
 	elif not buka:
 		st = "Terkunci"
 		col = Color("8b9bb4")
-	UI.label(b, st, Vector2(71, 34), col)
-	if selesai:
-		UI.label(b, "Bisa diulang", Vector2(71, 44), Color("8b9bb4"))
+	UI.label(b, st, Vector2(70, 42), col)
 
 
 func _pilih(i: int) -> void:

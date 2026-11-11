@@ -4,6 +4,7 @@ extends Node2D
 ##   _mulai()                      -> dipanggil setelah kartu judul level
 ##   _on_interact(id, kind)        -> saat pemain menekan E di dekat NPC / benda
 ##   _on_zone_enter(id)            -> saat pemain memasuki zona
+##   _alasan(momen, info)          -> pertanyaan "kenapa?" dari partner setelah sebuah pengukuran dicatat
 
 const UI = preload("res://scripts/ui_kit.gd")
 const FX = preload("res://scripts/fx.gd")
@@ -43,6 +44,7 @@ var hud: CanvasLayer
 var banner: NinePatchRect
 var banner_lbl: Label
 var toast: Label
+var toast_box: NinePatchRect
 var _toast_t := 0.0
 var mini_dot: ColorRect
 var dialog
@@ -53,6 +55,12 @@ var tkp_layer: CanvasLayer
 var m_first := {}
 var m_seq := {}
 var m_npc := {}
+
+# ---- partner (Kiki)
+const SAHUT := ["Oke, kucatat di buku!", "Sip, masuk catatan!", "Baik, kutulis dulu, ya."]
+var partner: Node2D = null
+var _antre := []          # pengukuran yang baru dicatat dan menunggu ditanya alasannya
+var _partner_it := {}     # entri interaksi milik partner (posisinya ikut bergerak)
 
 
 func _ready() -> void:
@@ -97,6 +105,7 @@ func _build_world() -> void:
 		var nid := String(n.name)
 		n.set_meta("phase", randf() * 2.0)
 		npcs[nid] = n
+		_bayangan(n)
 		var p: Vector2 = n.position
 		interactables.append({"id": nid, "kind": "npc", "rect": Rect2(p.x - 8, p.y - 9, 16, 11),
 			"anchor": Vector2(p.x, p.y - 31), "active": true})
@@ -137,6 +146,7 @@ func _build_world() -> void:
 	player.position = $SpawnPemain.position
 	player.facing = 3
 	entities.add_child(player)
+	_bayangan(player)
 	cam = Camera2D.new()
 	cam.limit_left = 0
 	cam.limit_top = 0
@@ -145,6 +155,15 @@ func _build_world() -> void:
 	cam.offset = Vector2(0, -10)
 	player.add_child(cam)
 	cam.make_current()
+	# partner
+	if Game.PARTNER_AKTIF:
+		partner = load("res://scripts/partner.gd").new()
+		partner.name = "Kiki"
+		partner.setup(player)
+		entities.add_child(partner)
+		_bayangan(partner)
+		_partner_it = {"id": "kiki", "kind": "partner", "rect": Rect2(), "anchor": Vector2.ZERO, "active": true}
+		interactables.append(_partner_it)
 	# ikon interaksi & panah tutorial
 	icon = Sprite2D.new()
 	icon.texture = load(UI.UI + "ikon_interaksi.png")
@@ -158,6 +177,28 @@ func _build_world() -> void:
 	arrow.z_index = 61
 	arrow.visible = false
 	add_child(arrow)
+
+
+## Bayangan lonjong kecil di bawah kaki karakter supaya terlihat menapak di lantai.
+static var _tex_bayang: ImageTexture
+
+
+func _bayangan(n: Node2D) -> void:
+	if _tex_bayang == null:
+		var img := Image.create(12, 5, false, Image.FORMAT_RGBA8)
+		for y in 5:
+			for x in 12:
+				var dx := (x - 5.5) / 6.0
+				var dy := (y - 2.0) / 2.5
+				if dx * dx + dy * dy <= 1.0:
+					img.set_pixel(x, y, Color(0.094, 0.078, 0.145, 0.28))
+		_tex_bayang = ImageTexture.create_from_image(img)
+	var s := Sprite2D.new()
+	s.name = "Bayangan"
+	s.texture = _tex_bayang
+	s.position = Vector2(0, -1)
+	n.add_child(s)
+	n.move_child(s, 0)
 
 
 ## Kotak dunia dari Area2D + CollisionShape2D (RectangleShape2D) di dalamnya.
@@ -200,8 +241,10 @@ func _build_hud() -> void:
 	var hb := UI.nine(hud, UI.UI + "banner.png", 4, Vector2(2, 166), Vector2(Game.font.get_string_size(hint_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 10, 13))
 	hb.modulate = Color(1, 1, 1, 0.85)
 	UI.label(hb, hint_txt, Vector2(5, 1), Color("c0cbdc"))
-	toast = UI.label(hud, "", Vector2(60, 22), UI.C_GOLD, 200, HORIZONTAL_ALIGNMENT_CENTER, UI.C_BLACK)
-	toast.modulate.a = 0.0
+	# pemberitahuan singkat (nama lokasi, bukti baru): papan gelap supaya terbaca di lantai terang
+	toast_box = UI.nine(hud, UI.UI + "banner.png", 4, Vector2(110, 22), Vector2(100, 15))
+	toast = UI.label(toast_box, "", Vector2(0, 3), Color("fee761"), 100, HORIZONTAL_ALIGNMENT_CENTER)
+	toast_box.modulate.a = 0.0
 	tkp_layer = CanvasLayer.new()
 	tkp_layer.layer = 8
 	add_child(tkp_layer)
@@ -273,11 +316,14 @@ func _atur_posisi_dialog() -> void:
 
 
 func show_toast(t: String, dur := 2.0) -> void:
+	var w: float = Game.font.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 16.0
+	toast_box.size = Vector2(w, 15)
+	toast.size = Vector2(w, 11)
 	toast.text = t
-	toast.modulate.a = 1.0
-	toast.position = Vector2(60, 12)
+	toast_box.modulate.a = 1.0
+	toast_box.position = Vector2(roundf(160.0 - w / 2.0), 12)
 	var tw := create_tween()
-	tw.tween_property(toast, "position:y", 22.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(toast_box, "position:y", 23.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_toast_t = dur
 
 
@@ -310,6 +356,9 @@ func ambil(oid: String) -> String:
 		Game.add_item(item)
 		Game.sfx("sfx_ambil")
 		FX.hop(player.sprite, 3)
+		if partner != null:
+			FX.hop(partner.sprite, 3)
+			FX.emote(self, partner.position + Vector2(0, -34), "senang", 0.8)
 		show_toast("Bukti baru: " + Game.ITEMS[item][0] + "!", 2.5)
 	return item
 
@@ -350,6 +399,9 @@ func buka_tkp(id: String) -> bool:
 	hud.visible = true
 	Game.play_bgm(BGM)
 	await Game.iris_open(0.4)
+	if lengkap:
+		_antre.append({"momen": "L%d.dekomposisi" % (Game.level_index + 1), "info": Game.tkp_state.get(id, {}).get("hasil", {})})
+		await proses_antre()
 	lock -= 1
 	return lengkap
 
@@ -397,11 +449,15 @@ func _process(delta: float) -> void:
 	if _toast_t > 0.0:
 		_toast_t -= delta
 		if _toast_t < 0.5:
-			toast.modulate.a = maxf(_toast_t / 0.5, 0.0)
+			toast_box.modulate.a = maxf(_toast_t / 0.5, 0.0)
 	arrow.visible = arrow_target != "" and not (target != null and target["id"] == arrow_target)
 	if arrow.visible and npcs.has(arrow_target):
 		arrow.position = npcs[arrow_target].position + Vector2(0, -36 + roundf(sin(_t * 5.0) * 2))
 		arrow.frame = int(_t * 3) % 2
+	if partner != null:
+		var pp := partner.position
+		_partner_it["rect"] = Rect2(pp.x - 6, pp.y - 8, 12, 9)
+		_partner_it["anchor"] = Vector2(pp.x, pp.y - 31)
 	var feet := player.global_position
 	mini_dot.position = Vector2(256, 140) + feet * 0.125 - Vector2(1, 1)
 	target = _find_target() if can_move() else null
@@ -428,7 +484,7 @@ func _find_target():
 	var bd := 14.0
 	var feet := player.global_position
 	for it in interactables:
-		if not it["active"]:
+		if not it["active"] or it["kind"] == "partner":
 			continue
 		var r: Rect2 = it["rect"]
 		var cp := Vector2(clampf(feet.x, r.position.x, r.end.x), clampf(feet.y, r.position.y, r.end.y))
@@ -436,6 +492,13 @@ func _find_target():
 		if d < bd:
 			bd = d
 			best = it
+	# partner selalu berada di dekat pemain, jadi ia hanya menjadi sasaran bila tidak ada sasaran lain
+	# dan pemain sedang menghadap ke arahnya
+	if best == null and partner != null:
+		var ke: Vector2 = partner.position - feet
+		var arah: Vector2 = [Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT, Vector2.UP][player.facing]
+		if ke.length() < 20.0 and ke.normalized().dot(arah) > 0.5:
+			best = _partner_it
 	return best
 
 
@@ -462,6 +525,10 @@ func interact(id: String) -> void:
 		return
 	lock += 1
 	Game.sfx("sfx_interaksi")
+	if it["kind"] == "partner":
+		await _bicara_partner()
+		lock -= 1
+		return
 	speaker = npcs.get(id, null)
 	if it["kind"] == "npc":
 		_cek_npc(id)
@@ -471,8 +538,12 @@ func interact(id: String) -> void:
 			sudah_disapa[id] = true
 			FX.emote(self, npc.position + Vector2(0, -34), "seru", 0.7)
 			Game.sfx("sfx_hop")
+		# alasan memilih NPC ini ditanyakan SEBELUM ia bicara, supaya tidak menyela cerita yang akan diukur
+		await proses_antre()
+		speaker = npcs.get(id, null)
 	await _on_interact(id, it["kind"])
 	speaker = null
+	await proses_antre()
 	lock -= 1
 
 
@@ -480,6 +551,7 @@ func _zone_task(zid: String) -> void:
 	if ZONE_NAMA.has(zid):
 		show_toast(ZONE_NAMA[zid], 1.6)
 	kunjungi(zid)
+	await proses_antre()
 	await _on_zone_enter(zid)
 
 
@@ -501,7 +573,11 @@ func ukur_npc_pertama(pilar: String, benar: String, kecuali: Array, konteks: Str
 
 func kunjungi(id: String) -> void:
 	if not m_first.is_empty() and id in m_first["kandidat"]:
-		Game.catat(m_first["pilar"], id == m_first["benar"], "%s: lokasi pertama = %s" % [m_first["konteks"], id])
+		var benar: bool = id == m_first["benar"]
+		var k: String = m_first["konteks"]
+		var teks := "Setelah %s%s, kamu pertama ke %s." % [k.substr(0, 1).to_lower(), k.substr(1), nama_tempat(id)]
+		var momen := Game.catat(m_first["pilar"], benar, "%s: lokasi pertama = %s" % [m_first["konteks"], id], {}, teks)
+		_antre.append({"momen": momen, "info": {"zona": id, "berhasil": benar}})
 		m_first = {}
 	if not m_seq.is_empty() and id in m_seq["urutan"] and not id in m_seq["visited"]:
 		m_seq["visited"].append(id)
@@ -509,16 +585,115 @@ func kunjungi(id: String) -> void:
 		var urut: Array = m_seq["urutan"]
 		var sesuai: bool = m_seq["visited"] == urut.slice(0, n)
 		if not sesuai or n == urut.size():
-			Game.catat(m_seq["pilar"], sesuai and n == urut.size(), "%s: urutan = %s" % [m_seq["konteks"], "-".join(m_seq["visited"])])
+			var ok: bool = sesuai and n == urut.size()
+			var godaan: bool = m_seq.get("godaan", false)
+			var detail := "%s: urutan = %s" % [m_seq["konteks"], "-".join(m_seq["visited"])]
+			if godaan:
+				detail += " (ada ajakan jalan pintas dari partner)"
+			var tempat := []
+			for v in m_seq["visited"]:
+				tempat.append(nama_tempat(v))
+			var teks := "%s: kamu ke %s." % [m_seq["konteks"], ", lalu ".join(tempat)]
+			if not ok:
+				teks += " (Urutannya: %s.)" % ", ".join(urut.map(nama_tempat))
+			var momen := Game.catat(m_seq["pilar"], ok, detail, {"godaan": godaan}, teks)
+			_antre.append({"momen": momen, "info": {"zona": id, "berhasil": ok}})
 			m_seq = {}
+
+
+## Nama tempat untuk kalimat siswa (zona tanpa nama, mis. "gudang", jadi "Gudang").
+func nama_tempat(id: String) -> String:
+	return ZONE_NAMA.get(id, id.replace("_", " ").capitalize())
 
 
 func _cek_npc(id: String) -> void:
 	if m_npc.is_empty() or id in m_npc["kecuali"]:
 		return
 	var meta = load("res://assets/chars/npc.json").data
-	Game.catat(m_npc["pilar"], id == m_npc["benar"], "%s: NPC pertama = %s (ciri %s)" % [m_npc["konteks"], id, meta.get(id, {}).get("ciri", "?")])
+	var benar: bool = id == m_npc["benar"]
+	var ciri: String = meta.get(id, {}).get("ciri", "")
+	var ciri_teks: String = {"kacamata": " (berkacamata)", "topi": " (bertopi)", "tas": " (membawa tas)",
+		"kerudung": " (berkerudung)", "kuncir": " (berkuncir)"}.get(ciri, "")
+	var teks := "Kamu pertama bertanya kepada %s%s." % [meta.get(id, {}).get("name", id), ciri_teks]
+	var momen := Game.catat(m_npc["pilar"], benar, "%s: NPC pertama = %s (ciri %s)" % [m_npc["konteks"], id, ciri], {}, teks)
+	_antre.append({"momen": momen, "info": {"npc": id, "berhasil": benar}})
 	m_npc = {}
+
+
+# ================================================================ PARTNER
+## Partner berbicara (tanpa pilihan). Tiap baris berupa teks, atau ["senang", teks] untuk ekspresi senang.
+## Dilewati bila partner dimatikan.
+func kata_partner(lines: Array) -> void:
+	if partner == null:
+		return
+	var semua := []
+	for l in lines:
+		if l is Array:
+			semua.append(["kiki:" + str(l[0]), l[1]])
+		else:
+			semua.append(["kiki", l])
+	speaker = partner
+	partner.hadap(player.position)
+	await say(semua)
+	speaker = null
+
+
+## Partner bertanya dengan pilihan jawaban. opsi = [[kode, teks], ...]. Mengembalikan kode jawaban.
+## Urutan pilihan diacak supaya posisi jawaban tidak memengaruhi pilihan pemain.
+func tanya_partner(kunci: String, teks: String, opsi: Array) -> String:
+	lock += 1
+	speaker = partner
+	if partner != null:
+		partner.hadap(player.position)
+		FX.emote(self, partner.position + Vector2(0, -34), "tanya", 0.8)
+		Game.sfx("sfx_hop")
+	_atur_posisi_dialog()
+	var urut := opsi.duplicate()
+	if not Game.autotest:
+		urut.shuffle()
+	var auto_kode: String = Game.auto_jawab.get(kunci, opsi[0][0])
+	var auto := 0
+	var teks_opsi := []
+	for i in urut.size():
+		teks_opsi.append(urut[i][1])
+		if urut[i][0] == auto_kode:
+			auto = i
+	var pilih: int = await dialog.tanya("kiki", teks, teks_opsi, auto)
+	speaker = null
+	lock -= 1
+	return urut[pilih][0]
+
+
+## Tanyakan alasan untuk semua pengukuran yang baru saja dicatat. Selalu ditanyakan, baik pemain
+## "berhasil" maupun tidak, dan jawaban partner selalu netral, supaya tidak menjadi tanda benar/salah.
+func proses_antre() -> void:
+	while not _antre.is_empty():
+		var a: Dictionary = _antre.pop_front()
+		if partner == null or not Game.TANYA_ALASAN:
+			continue
+		var q: Dictionary = _alasan(a["momen"], a["info"])
+		if q.is_empty():
+			continue
+		var kode: String = await tanya_partner(a["momen"], q["tanya"], q["opsi"])
+		var teks := ""
+		for o in q["opsi"]:
+			if o[0] == kode:
+				teks = o[1]
+		Game.catat_alasan(a["momen"], kode, teks)
+		await kata_partner([SAHUT[randi() % SAHUT.size()]])
+
+
+## Pemain menyapa partner: Kiki hanya mengulang tujuan saat ini (tidak pernah memberi jawaban).
+## Jumlahnya dicatat di CSV (kolom bantuan_partner).
+func _bicara_partner() -> void:
+	var lv := Game.level_index + 1
+	Game.bantuan[lv] = int(Game.bantuan.get(lv, 0)) + 1
+	FX.hop(partner.sprite, 3)
+	if objective == "":
+		await kata_partner(["Aku ikut di belakangmu, Detektif!"])
+	else:
+		await kata_partner(["Tujuan kita sekarang: %s%s." % [objective.substr(0, 1).to_lower(), objective.substr(1)],
+			"Aku ikut di belakangmu, ya!"])
 
 
 # ================================================================ PANELS
@@ -529,13 +704,16 @@ func _on_book_btn() -> void:
 	var nb = load("res://scripts/notebook.gd").new()
 	nb.objective = objective
 	overlay_layer.add_child(nb)
-	FX.pulse(book_btn, 1.2, 0.2)
+	hud.visible = false
 	await nb.ditutup
+	hud.visible = true
+	FX.pulse(book_btn, 1.2, 0.2)
 	lock -= 1
 
 
 func _open_pause() -> void:
 	lock += 1
+	hud.visible = false
 	var root := Control.new()
 	root.size = Vector2(320, 180)
 	overlay_layer.add_child(root)
@@ -555,6 +733,7 @@ func _open_pause() -> void:
 func _close_pause(root: Control) -> void:
 	if is_instance_valid(root):
 		root.queue_free()
+		hud.visible = true
 		lock -= 1
 
 
@@ -596,3 +775,9 @@ func _on_interact(id: String, _kind: String) -> void:
 
 func _on_zone_enter(_id: String) -> void:
 	pass
+
+
+## Pertanyaan alasan untuk sebuah momen pengukuran. Kembalikan {} bila tidak perlu ditanya,
+## atau {"tanya": "...", "opsi": [[kode, teks], ...]}. Kode yang menguatkan: lihat Game.ALASAN_MENGUATKAN.
+func _alasan(_momen: String, _info: Dictionary) -> Dictionary:
+	return {}

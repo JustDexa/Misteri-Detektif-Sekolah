@@ -20,6 +20,7 @@ var popup: Control
 var name_edit: LineEdit
 var name_plate: NinePatchRect
 var name_lbl: Label
+const NAMA_Y := 163.0   # papan nama + tombol GANTI (tinggi 15) tidak lagi menempel di tepi bawah layar
 
 
 func _ready() -> void:
@@ -39,11 +40,11 @@ func _ready() -> void:
 	var b_opsi := UI.button(self, "opsi", Vector2(70, 142), _on_opsi)
 	var b_kredit := UI.button(self, "kredit", Vector2(132, 142), _on_kredit)
 	var b_keluar := UI.button(self, "keluar", Vector2(194, 142), _on_keluar)
-	UI.label(self, "v1.3", Vector2(262, 169), Color(1, 1, 1, 0.6), 54, HORIZONTAL_ALIGNMENT_RIGHT)
+	UI.label(self, "v1.4", Vector2(262, 168), Color(1, 1, 1, 0.6), 54, HORIZONTAL_ALIGNMENT_RIGHT)
 	# papan nama pemain + tombol ganti
-	name_plate = UI.nine(self, UI.UI + "banner.png", 4, Vector2(0, 165), Vector2(80, 15))
+	name_plate = UI.nine(self, UI.UI + "banner.png", 4, Vector2(0, NAMA_Y), Vector2(80, 15))
 	name_lbl = UI.label(name_plate, "", Vector2(6, 3), Color.WHITE)
-	UI.button(self, "ganti", Vector2(0, 165), _on_ganti)
+	UI.button(self, "ganti", Vector2(0, NAMA_Y), _on_ganti)
 	_update_nama()
 	# ---- animasi masuk
 	FX.slide_in(logo, Vector2(0, -95), 0.05, 0.8, Tween.TRANS_BOUNCE)
@@ -60,6 +61,7 @@ func _ready() -> void:
 	var leaves := FX.ambient(self, "daun")
 	leaves.amount = 5
 	leaves.position = Vector2(160, 70)
+	leaves.z_index = 0   # daun tidak melayang di atas popup nama / panel opsi
 	Game.play_bgm("bgm_menu")
 	if Game.player_name == "" or "--popup" in OS.get_cmdline_user_args():
 		_buka_popup_nama(true)
@@ -73,11 +75,11 @@ func _update_nama() -> void:
 	var w := Game.font.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 12
 	name_plate.size = Vector2(w, 15)
 	var x0 := roundf((320 - (w + 42)) / 2.0)
-	name_plate.position = Vector2(x0, 165)
+	name_plate.position = Vector2(x0, NAMA_Y)
 	for c in get_children():
 		if c is TextureButton and c.texture_normal.resource_path.ends_with("ganti_normal.png"):
-			c.position = Vector2(x0 + w + 2, 165)
-			c.set_meta("base_y", 165.0)
+			c.position = Vector2(x0 + w + 2, NAMA_Y)
+			c.set_meta("base_y", NAMA_Y)
 
 
 func _process(delta: float) -> void:
@@ -153,19 +155,21 @@ func _buka_popup_nama(wajib: bool) -> void:
 	Game.sfx("sfx_pop")
 	UI.label(p, "NAMA DETEKTIF" if wajib else "GANTI PEMAIN", Vector2(0, 10), Color.WHITE, 200, HORIZONTAL_ALIGNMENT_CENTER, UI.C_RED_D)
 	var info := "Halo! Tulis namamu dulu, ya." if wajib else "Pemain baru mulai dari Level 1."
-	UI.label(p, info, Vector2(14, 28), UI.C_CHOC, 172, HORIZONTAL_ALIGNMENT_CENTER)
+	# isi panel (y 24..113) dibagi rata: teks 35, kotak nama 52, tombol 80
+	UI.label(p, info, Vector2(14, 35), UI.C_CHOC, 172, HORIZONTAL_ALIGNMENT_CENTER)
 	name_edit = LineEdit.new()
-	name_edit.position = Vector2(30, 46)
+	name_edit.position = Vector2(30, 52)
 	name_edit.size = Vector2(140, 18)
 	name_edit.max_length = 18
 	name_edit.placeholder_text = "Nama kamu"
-	name_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_edit.alignment = HORIZONTAL_ALIGNMENT_LEFT   # rata kiri: kursor tidak lagi membelah tulisan "Nama kamu"
+	name_edit.context_menu_enabled = false
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color("ffffff")
 	sb.border_color = Color("3e2731")
 	sb.set_border_width_all(1)
-	sb.content_margin_left = 4
-	sb.content_margin_right = 4
+	sb.content_margin_left = 6
+	sb.content_margin_right = 6
 	sb.content_margin_top = 3
 	sb.content_margin_bottom = 2
 	name_edit.add_theme_stylebox_override("normal", sb)
@@ -176,7 +180,7 @@ func _buka_popup_nama(wajib: bool) -> void:
 	name_edit.text_submitted.connect(_on_submit)
 	p.add_child(name_edit)
 	name_edit.grab_focus()
-	UI.button(p, "simpan", Vector2(64, 74), _simpan_nama)
+	UI.button(p, "simpan", Vector2(64, 80), _simpan_nama)
 	popup.set_meta("wajib", wajib)
 	if not wajib:
 		var x := TextureButton.new()

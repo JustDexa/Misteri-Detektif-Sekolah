@@ -2,10 +2,14 @@ extends "res://scripts/level_base.gd"
 ## LEVEL 3 — PASAR RAKYAT. Kasus: ember Bu Sri hilang.
 ## Diukur: POLA uji 1 (NPC pertama yang didatangi setelah kasus: benar bila Tari, NPC berkacamata)
 ##         DEKOMPOSISI 1 (TKP kios ikan, Mode Grid).
+## Partner: Kiki TIDAK menanyakan alasan di level ini. Pilihan jawabannya ("yang berkacamata", "kubagi jadi
+##          beberapa bagian") akan mengajari strategi untuk pengukuran Pola dan Dekomposisi kedua di Level 4.
+## Tata letak: Tari berdiri di dekat kios sayur, masih terlihat dari tempat Bu Sri dan kira-kira sejauh
+##          Pak pedagang buah, supaya "NPC pertama" tidak ditentukan oleh siapa yang kebetulan terlihat.
 
 const PENGECOH := {
 	"pedagang_buah": "Ember? Wah, Bapak dari tadi sibuk menimbang jeruk. Nggak lihat, Dik.",
-	"ibu_pembeli": "Ibu baru datang mau beli bawang. Ember biru? Nggak tahu, Dik.",
+	"ibu_pembeli": "Ibu baru datang mau beli kain. Ember biru? Nggak tahu, Dik.",
 	"anak_pedagang": "Aku bantu ibuku jualan dari subuh. Ember biru? Nggak lihat, tuh.",
 	"tukang_becak": "Becak Bapak siap antar ke mana saja! Ember? Bapak nggak perhatikan, Dik.",
 }
@@ -22,6 +26,7 @@ func _init() -> void:
 
 func _mulai() -> void:
 	await say([["", "Pagi yang ramai di Pasar Rakyat. Bu Sri, pedagang sayur, melambaikan tangan ke arahmu."]])
+	await kata_partner(["Wah, ramai sekali pasarnya. Jangan sampai kita terpisah, ya!"])
 	set_objective("Temui Bu Sri, pedagang sayur")
 
 
@@ -35,7 +40,7 @@ func _on_interact(id: String, _kind: String) -> void:
 				ditanya.append(id)
 			flags["ditanya"] = ditanya
 			if ditanya.size() >= 3:
-				lines.append([id, "Hmm, tadi ada anak perempuan dekat kios kain. Mungkin dia tahu sesuatu."])
+				lines.append([id, "Hmm, tadi ada anak perempuan di dekat kios sayur. Mungkin dia tahu sesuatu."])
 		elif not mulai:
 			lines = [[id, "Selamat pagi! Pasar sedang ramai, ya."]]
 		await say(lines)

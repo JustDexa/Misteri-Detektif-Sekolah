@@ -28,12 +28,32 @@ const PILAR_WARNA := {
 	"abstraksi": Color("3e8948"),
 	"algoritma": Color("e43b44"),
 }
+## ---------------------------------------------------------------- PENGATURAN PENELITIAN
+## Ubah di sini bila ingin mematikan salah satu fitur partner (mis. untuk kelompok pembanding).
+var PARTNER_AKTIF := true      # Kiki ikut menemani pemain
+var TANYA_ALASAN := true       # Kiki menanyakan alasan SETELAH sebuah tindakan dicatat
+var GODAAN_PARTNER := true     # Kiki mengajak mengambil jalan pintas tepat setelah instruksi berurutan (Algoritma)
+var RAPAT_DETEKTIF := true     # 4 pertanyaan singkat di akhir cerita (1 per pilar)
+const BOBOT_RAPAT := 0.5       # bobot 1 jawaban Rapat Detektif dibanding 1 perilaku (= 1.0)
+const NILAI_KEBETULAN := 0.5   # perilaku berhasil tetapi alasannya "paling dekat / asal" hanya dihitung separuh
+## Alasan yang MENGUATKAN perilaku (pemain memang memakai pilar itu). Alasan lain = kebetulan.
+const ALASAN_MENGUATKAN := ["info", "instruksi", "pola", "bagi"]
+const LEVEL_RAPAT := 5         # nomor "level" untuk catatan Rapat Detektif
+
 const PROFIL := {
 	"dekomposisi": ["Si Pemecah Masalah", "Kamu suka memecah masalah besar menjadi bagian-bagian kecil, lalu menyelesaikannya satu per satu."],
 	"pola": ["Si Pengamat Pola", "Kamu jeli melihat kesamaan yang berulang, lalu memakainya untuk menebak langkah berikutnya."],
 	"abstraksi": ["Si Fokus", "Kamu pandai menyaring informasi: yang penting kamu ambil, yang tidak penting kamu abaikan."],
 	"algoritma": ["Si Sistematis", "Kamu teliti mengikuti langkah demi langkah dengan urutan yang tepat."],
 	"seimbang": ["Detektif Serba Bisa", "Semua cara berpikirmu muncul seimbang. Kamu bisa memakai cara berbeda untuk masalah berbeda."],
+	"belum": ["Detektif Penjelajah", "Gaya berpikirmu belum terlihat jelas. Yuk, selidiki sekali lagi dengan caramu sendiri!"],
+}
+## Dipakai bila DUA pilar sama kuat: "kamu <a>, dan <b>."
+const PROFIL_SINGKAT := {
+	"dekomposisi": "suka memecah masalah",
+	"pola": "jeli melihat pola",
+	"abstraksi": "pandai memilah yang penting",
+	"algoritma": "teliti mengikuti urutan",
 }
 const ITEMS := {
 	"sapu": ["Sapu Kelas", "Sapu ijuk milik kelas. Ditemukan di dekat gudang belakang sekolah."],
@@ -68,9 +88,15 @@ var player_name := ""
 var level_index := 0
 var durasi := {}
 var level_start_ms := 0
-var skor := {}
-var peluang := {}
-var riwayat := []
+var skor := {}       # perilaku berhasil per pilar (bilangan bulat)
+var peluang := {}    # kesempatan perilaku per pilar
+var poin := {}       # nilai berbobot per pilar (perilaku dikoreksi alasan + Rapat Detektif)
+var bobot := {}      # bobot total per pilar
+var riwayat := []    # hasil TERBARU (inilah yang tampil di Rapor)
+var pertama := {}    # momen -> catatan saat PERTAMA KALI pemain mengalami momen itu (untuk penelitian)
+var percobaan := [0, 0, 0, 0]   # berapa kali tiap level dimulai
+var bantuan := {}    # nomor level -> berapa kali pemain bertanya kepada partner
+var auto_jawab := {} # uji otomatis: kunci pertanyaan -> kode jawaban
 var inventory := []
 var level_done := []
 var start_ms := 0
@@ -88,6 +114,7 @@ var vol_music := 0.7
 var vol_sfx := 0.9
 var autotest := false
 var hold_dialog := false
+var hold_tanya := false   # uji otomatis: tahan daftar pilihan di layar (untuk tangkapan layar)
 
 
 func _ready() -> void:
@@ -234,6 +261,9 @@ func semua_selesai() -> bool:
 ## Mulai (atau ulangi) satu level. Hasil lama level itu dihapus agar diganti hasil baru.
 func mulai_level(i: int) -> void:
 	load_profil()
+	percobaan[i] = int(percobaan[i]) + 1
+	bantuan[i + 1] = 0
+	_simpan_bagian({"percobaan": percobaan})
 	var baru := []
 	for r in riwayat:
 		if int(r["level"]) != i + 1:
@@ -261,11 +291,14 @@ func level_selesai() -> void:
 	durasi[level_index] = int((Time.get_ticks_msec() - level_start_ms) / 1000.0)
 	if not level_index in level_done:
 		level_done.append(level_index)
+	var ulangan: bool = (level_index + 1) in level_done   # level berikutnya sudah pernah selesai = ini ulangan
 	save_profil()
-	if level_index < LEVELS.size() - 1:
-		mulai_level(level_index + 1)
-	else:
+	if level_index >= LEVELS.size() - 1:
 		change("res://scripts/ending.gd")
+	elif ulangan:
+		goto_level_select()   # mengulang satu level tidak memaksa mengulang level sesudahnya
+	else:
+		mulai_level(level_index + 1)
 
 
 # ---------------------------------------------------------------- profil pemain (nama + progres)
@@ -278,6 +311,9 @@ func load_profil() -> void:
 	riwayat = cf.get_value("progres", "riwayat", [])
 	inventory = cf.get_value("progres", "bukti", [])
 	durasi = cf.get_value("progres", "durasi", {})
+	pertama = cf.get_value("progres", "pertama", {})
+	percobaan = cf.get_value("progres", "percobaan", [0, 0, 0, 0])
+	bantuan = cf.get_value("progres", "bantuan", {})
 	tkp_state = {}
 	_hitung()
 
@@ -289,6 +325,21 @@ func save_profil() -> void:
 	cf.set_value("progres", "riwayat", riwayat)
 	cf.set_value("progres", "bukti", inventory)
 	cf.set_value("progres", "durasi", durasi)
+	cf.set_value("progres", "pertama", pertama)
+	cf.set_value("progres", "percobaan", percobaan)
+	cf.set_value("progres", "bantuan", bantuan)
+	cf.save(PROFIL_PATH)
+
+
+## Simpan sebagian data SEKARANG JUGA tanpa menyentuh progres lain di berkas. Dipakai untuk data penelitian
+## (catatan pertama, jumlah percobaan) supaya tidak hilang bila pemain keluar di tengah level.
+func _simpan_bagian(data: Dictionary) -> void:
+	var cf := ConfigFile.new()
+	cf.load(PROFIL_PATH)
+	if not cf.has_section_key("profil", "nama"):
+		cf.set_value("profil", "nama", player_name)
+	for k in data:
+		cf.set_value("progres", k, data[k])
 	cf.save(PROFIL_PATH)
 
 
@@ -323,7 +374,12 @@ func reset_progress() -> void:
 	for p in PILAR:
 		skor[p] = 0
 		peluang[p] = 0
+		poin[p] = 0.0
+		bobot[p] = 0.0
 	riwayat = []
+	pertama = {}
+	percobaan = [0, 0, 0, 0]
+	bantuan = {}
 	inventory = []
 	level_done = []
 	tkp_state = {}
@@ -332,36 +388,146 @@ func reset_progress() -> void:
 	start_ms = Time.get_ticks_msec()
 
 
-## Catat satu kesempatan pengukuran. Satu aksi hanya untuk satu pilar.
-func catat(pilar: String, berhasil: bool, detail := "") -> void:
-	riwayat.append({
+## Catat satu kesempatan pengukuran PERILAKU. Satu aksi hanya untuk satu pilar.
+## Mengembalikan pengenal momen ("L<level>.<pilar>") yang dipakai untuk menempelkan alasan pemain.
+## teks = kalimat untuk siswa yang tampil di halaman "Bukti" pada Rapor (mis. "Kamu pertama ke Gudang Belakang.").
+func catat(pilar: String, berhasil: bool, detail := "", info := {}, teks := "") -> String:
+	var momen := "L%d.%s" % [level_index + 1, pilar]
+	_tambah_catatan({
 		"level": level_index + 1,
 		"pilar": pilar,
 		"berhasil": berhasil,
 		"detail": detail,
 		"detik": int((Time.get_ticks_msec() - level_start_ms) / 1000.0),
+		"jenis": "perilaku",
+		"momen": momen,
+		"alasan": "",
+		"info": info,
+		"teks": teks,
+		"percobaan": int(percobaan[level_index]),
 	})
-	_hitung()
 	print("[CT] level %d | %s | %s | %s" % [level_index + 1, pilar, "BERHASIL" if berhasil else "tidak", detail])
+	return momen
 
 
-## Hitung ulang skor & kesempatan dari riwayat.
-func _hitung() -> void:
-	for p in PILAR:
-		skor[p] = 0
-		peluang[p] = 0
+## Catat satu jawaban Rapat Detektif (pertanyaan singkat di akhir cerita, bobot BOBOT_RAPAT).
+func catat_rapat(pilar: String, benar: bool, detail := "", teks := "") -> void:
+	_tambah_catatan({
+		"level": LEVEL_RAPAT,
+		"pilar": pilar,
+		"berhasil": benar,
+		"detail": detail,
+		"detik": 0,
+		"jenis": "rapat",
+		"momen": "R." + pilar,
+		"alasan": "",
+		"info": {},
+		"teks": teks,
+		"percobaan": int(percobaan[LEVELS.size() - 1]),
+	})
+	print("[CT] rapat | %s | %s | %s" % [pilar, "BENAR" if benar else "tidak", detail])
+
+
+func _tambah_catatan(r: Dictionary) -> void:
+	riwayat.append(r)
+	if not pertama.has(r["momen"]):
+		pertama[r["momen"]] = r.duplicate(true)
+		_simpan_bagian({"pertama": pertama})
+	_hitung()
+
+
+## Tempelkan alasan (jawaban pemain kepada partner) pada catatan perilaku terakhir untuk momen itu.
+## Alasan TIDAK mengubah "berhasil"; ia hanya menguatkan atau mengoreksi nilainya (lihat nilai_catatan).
+func catat_alasan(momen: String, kode: String, teks := "") -> void:
+	for i in range(riwayat.size() - 1, -1, -1):
+		var r: Dictionary = riwayat[i]
+		if r.get("momen", "") != momen:
+			continue
+		r["alasan"] = kode
+		r["alasan_teks"] = teks
+		var f = pertama.get(momen)
+		if f != null and int(f.get("percobaan", 0)) == int(r.get("percobaan", 0)) and f.get("alasan", "") == "":
+			f["alasan"] = kode
+			f["alasan_teks"] = teks
+			_simpan_bagian({"pertama": pertama})
+		break
+	_hitung()
+	print("[CT] alasan | %s | %s | %s" % [momen, kode, teks])
+
+
+func hapus_catatan_level(nomor_level: int) -> void:
+	var baru := []
 	for r in riwayat:
-		peluang[r["pilar"]] += 1
-		if r["berhasil"]:
-			skor[r["pilar"]] += 1
+		if int(r["level"]) != nomor_level:
+			baru.append(r)
+	riwayat = baru
+	_hitung()
 
 
-## Rasio keberhasilan per pilar (skor/peluang), lalu dinormalisasi menjadi distribusi 100%.
-func persentase() -> Dictionary:
+## Nilai satu catatan (0..1). Perilaku berhasil yang alasannya "paling dekat / asal" = kebetulan = separuh.
+func nilai_catatan(r: Dictionary) -> float:
+	if not r.get("berhasil", false):
+		return 0.0
+	if r.get("jenis", "perilaku") == "perilaku":
+		var a: String = r.get("alasan", "")
+		if a != "" and not a in ALASAN_MENGUATKAN:
+			return NILAI_KEBETULAN
+	return 1.0
+
+
+func bobot_catatan(r: Dictionary) -> float:
+	return BOBOT_RAPAT if r.get("jenis", "perilaku") == "rapat" else 1.0
+
+
+## Ringkasan per pilar dari sebuah daftar catatan.
+##   skor/peluang = perilaku murni; kebetulan = berapa dari "skor" yang alasannya bukan pilar itu
+##   (paling dekat / asal); rapat = 1/0/-1 (tidak ada);
+##   poin/bobot = nilai berbobot yang dipakai Rapor.
+func ringkas(daftar: Array) -> Dictionary:
+	var out := {}
+	for p in PILAR:
+		out[p] = {"skor": 0, "peluang": 0, "kebetulan": 0, "rapat": -1, "poin": 0.0, "bobot": 0.0}
+	for r in daftar:
+		var o: Dictionary = out[r["pilar"]]
+		var w := bobot_catatan(r)
+		var n := nilai_catatan(r)
+		o["poin"] += n * w
+		o["bobot"] += w
+		if r.get("jenis", "perilaku") == "rapat":
+			o["rapat"] = 1 if r["berhasil"] else 0
+		else:
+			o["peluang"] += 1
+			if r["berhasil"]:
+				o["skor"] += 1
+				if n < 1.0:
+					o["kebetulan"] += 1
+	return out
+
+
+## Catatan saat pemain PERTAMA KALI mengalami tiap momen (tidak tertimpa bila level diulang).
+func catatan_pertama() -> Array:
+	var out := []
+	for r in riwayat:
+		out.append(pertama.get(r.get("momen", ""), r))
+	return out
+
+
+## Hitung ulang skor & kesempatan dari riwayat terbaru.
+func _hitung() -> void:
+	var rk := ringkas(riwayat)
+	for p in PILAR:
+		skor[p] = rk[p]["skor"]
+		peluang[p] = rk[p]["peluang"]
+		poin[p] = rk[p]["poin"]
+		bobot[p] = rk[p]["bobot"]
+
+
+## Rasio per pilar (poin/bobot), lalu dinormalisasi menjadi distribusi 100%.
+func persentase_dari(rk: Dictionary) -> Dictionary:
 	var rasio := {}
 	var total := 0.0
 	for p in PILAR:
-		rasio[p] = (float(skor[p]) / peluang[p]) if peluang[p] > 0 else 0.0
+		rasio[p] = (float(rk[p]["poin"]) / rk[p]["bobot"]) if rk[p]["bobot"] > 0.0 else 0.0
 		total += rasio[p]
 	var hasil := {}
 	for p in PILAR:
@@ -369,83 +535,185 @@ func persentase() -> Dictionary:
 	return hasil
 
 
+func persentase() -> Dictionary:
+	return persentase_dari(ringkas(riwayat))
+
+
 ## Persentase dibulatkan ke bilangan bulat yang jumlahnya tepat 100 (metode sisa terbesar).
-func persentase_bulat() -> Dictionary:
-	var pr := persentase()
+func bulatkan(pr: Dictionary) -> Dictionary:
 	var hasil := {}
 	var sisa := []
 	var jumlah := 0
-	for p in PILAR:
+	for i in PILAR.size():
+		var p: String = PILAR[i]
 		var f: float = pr[p]
-		hasil[p] = int(floor(f))
+		hasil[p] = int(floor(f + 0.0001))
 		jumlah += hasil[p]
-		sisa.append([f - floor(f), p])
-	sisa.sort_custom(func(a, b): return a[0] > b[0])
+		sisa.append([f - hasil[p], -i, p])
+	sisa.sort_custom(func(a, b): return a[0] > b[0] + 0.0001 or (absf(a[0] - b[0]) <= 0.0001 and a[1] > b[1]))
 	var i := 0
 	while jumlah < 100 and i < sisa.size():
-		hasil[sisa[i][1]] += 1
+		hasil[sisa[i][2]] += 1
 		jumlah += 1
 		i += 1
 	return hasil
 
 
-func dominan() -> String:
-	var pr := persentase()
-	var best := ""
-	var best_v := -1.0
-	var seri := 0
+func persentase_bulat() -> Dictionary:
+	return bulatkan(persentase())
+
+
+## Gaya dominan dari sebuah ringkasan:
+##   "belum"      = tidak ada satu pun pilar yang muncul
+##   "<pilar>"    = satu pilar paling menonjol
+##   "<a>+<b>"    = DUA pilar sama kuat (tidak lagi dimenangkan pilar yang urutannya lebih awal)
+##   "seimbang"   = tiga atau empat pilar sama kuat
+func gaya_dari(rk: Dictionary) -> String:
+	var total := 0.0
 	for p in PILAR:
-		if pr[p] > best_v + 0.01:
-			best_v = pr[p]
-			best = p
-			seri = 1
-		elif absf(pr[p] - best_v) <= 0.01:
-			seri += 1
-	if seri >= 3:
+		total += rk[p]["poin"]
+	if total <= 0.0:
+		return "belum"
+	var pr := persentase_dari(rk)
+	var best_v := -1.0
+	for p in PILAR:
+		best_v = maxf(best_v, pr[p])
+	var puncak := []
+	for p in PILAR:
+		if absf(pr[p] - best_v) <= 0.01:
+			puncak.append(p)
+	if puncak.size() >= 3:
 		return "seimbang"
-	return best
+	return "+".join(puncak)
 
 
+func dominan() -> String:
+	return gaya_dari(ringkas(riwayat))
+
+
+## Pilar-pilar di dalam sebuah gaya ("pola+abstraksi" -> ["pola", "abstraksi"]). Kosong untuk seimbang/belum.
+func pilar_gaya(gaya: String) -> Array:
+	var out := []
+	for p in gaya.split("+"):
+		if p in PILAR:
+			out.append(p)
+	return out
+
+
+## [judul, deskripsi] untuk sebuah gaya, termasuk gabungan dua pilar.
+func profil_teks(gaya: String) -> Array:
+	if PROFIL.has(gaya):
+		return PROFIL[gaya]
+	var ps := pilar_gaya(gaya)
+	if ps.size() == 2:
+		return [
+			"%s & %s" % [PROFIL[ps[0]][0], PROFIL[ps[1]][0]],
+			"Dua gayamu sama kuat: kamu %s, dan %s." % [PROFIL_SINGKAT[ps[0]], PROFIL_SINGKAT[ps[1]]],
+		]
+	return PROFIL["seimbang"]
+
+
+# ---------------------------------------------------------------- CSV hasil (untuk laporan penelitian)
+const CSV_PATH := "user://hasil_rapor.csv"
+
+
+func _kepala_csv() -> Array:
+	# Semua angka berupa bilangan bulat supaya aman dibuka di Excel dengan pengaturan wilayah apa pun.
+	var head := ["waktu", "nama", "durasi_detik", "percobaan_per_level"]
+	for p in PILAR:
+		head.append(p + "_berhasil")
+		head.append(p + "_kesempatan")
+	for p in PILAR:
+		head.append(p + "_kebetulan")
+	for p in PILAR:
+		head.append(p + "_rapat")
+	for p in PILAR:
+		head.append("persen_" + p)
+	head.append("gaya_dominan")
+	for p in PILAR:
+		head.append("terbaru_" + p + "_berhasil")
+		head.append("terbaru_" + p + "_kesempatan")
+	head.append("gaya_dominan_terbaru")
+	head.append_array(["alasan", "jalur_tkp", "godaan_partner", "bantuan_partner", "rincian", "rincian_terbaru"])
+	return head
+
+
+func _rinci(daftar: Array) -> String:
+	var out := []
+	for r in daftar:
+		var nama := "Rapat" if int(r["level"]) == LEVEL_RAPAT else "L%d" % int(r["level"])
+		var t := "%s %s=%s (%s)" % [nama, r["pilar"], "1" if r["berhasil"] else "0", str(r["detail"]).replace(";", ",")]
+		if r.get("alasan", "") != "":
+			t += " [alasan: %s]" % r["alasan"]
+		out.append(t)
+	return " | ".join(out)
+
+
+## Tambah satu baris ke CSV. Kolom utama memakai PERCOBAAN PERTAMA; kolom "terbaru_*" memakai hasil terakhir.
 func simpan_hasil() -> String:
-	var path := "user://hasil_rapor.csv"
-	var baru := not FileAccess.file_exists(path)
-	var f: FileAccess
-	if baru:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	else:
-		f = FileAccess.open(path, FileAccess.READ_WRITE)
+	var head := ";".join(_kepala_csv())
+	if FileAccess.file_exists(CSV_PATH):
+		var lama := FileAccess.open(CSV_PATH, FileAccess.READ)
+		var baris1 := lama.get_line() if lama else ""
+		if lama:
+			lama.close()
+		if baris1 != head:
+			# berkas dari versi game sebelumnya (kolomnya berbeda): arsipkan, jangan dicampur
+			var cap := Time.get_datetime_string_from_system().replace(":", "").replace("-", "").replace("T", "_")
+			DirAccess.rename_absolute(ProjectSettings.globalize_path(CSV_PATH),
+				ProjectSettings.globalize_path("user://hasil_rapor_lama_%s.csv" % cap))
+	var baru := not FileAccess.file_exists(CSV_PATH)
+	var f := FileAccess.open(CSV_PATH, FileAccess.WRITE if baru else FileAccess.READ_WRITE)
 	if f == null:
 		return ""
 	f.seek_end()
 	if baru:
-		var head := ["waktu", "nama", "durasi_menit"]
-		for p in PILAR:
-			head.append(p + "_berhasil")
-			head.append(p + "_kesempatan")
-		for p in PILAR:
-			head.append("persen_" + p)
-		head.append("gaya_dominan")
-		head.append("rincian")
-		f.store_line(";".join(head))
-	var pr := persentase_bulat()
+		f.store_line(head)
+	var awal := catatan_pertama()
+	var rk1 := ringkas(awal)
+	var rk2 := ringkas(riwayat)
+	var pb := bulatkan(persentase_dari(rk1))
 	var total_detik := 0
 	for k in durasi:
 		total_detik += int(durasi[k])
+	var coba := []
+	for n in percobaan:
+		coba.append(str(int(n)))
 	var row := [Time.get_datetime_string_from_system(false, true), player_name.replace(";", ","),
-		"%.1f" % (total_detik / 60.0)]
+		str(total_detik), "|".join(coba)]
 	for p in PILAR:
-		row.append(str(skor[p]))
-		row.append(str(peluang[p]))
+		row.append(str(rk1[p]["skor"]))
+		row.append(str(rk1[p]["peluang"]))
 	for p in PILAR:
-		row.append(str(pr[p]))
-	row.append(PROFIL[dominan()][0])
-	var rinci := []
-	for r in riwayat:
-		rinci.append("L%d %s=%s (%s)" % [r["level"], r["pilar"], "1" if r["berhasil"] else "0", str(r["detail"]).replace(";", ",")])
-	row.append(" | ".join(rinci))
+		row.append(str(rk1[p]["kebetulan"]))
+	for p in PILAR:
+		row.append("" if rk1[p]["rapat"] < 0 else str(rk1[p]["rapat"]))
+	for p in PILAR:
+		row.append(str(pb[p]))
+	row.append(profil_teks(gaya_dari(rk1))[0])
+	for p in PILAR:
+		row.append(str(rk2[p]["skor"]))
+		row.append(str(rk2[p]["peluang"]))
+	row.append(profil_teks(gaya_dari(rk2))[0])
+	var alasan := []
+	var jalur := []
+	for r in awal:
+		if r.get("alasan", "") != "":
+			alasan.append("%s=%s" % [r["momen"], r["alasan"]])
+		if r["pilar"] == "dekomposisi" and r.get("info", {}).has("jalur"):
+			jalur.append("L%d=%s" % [int(r["level"]), r["info"]["jalur"]])
+	row.append(" | ".join(alasan))
+	row.append(" | ".join(jalur))
+	row.append("ya" if (PARTNER_AKTIF and GODAAN_PARTNER) else "tidak")
+	var bantu := []
+	for i in LEVELS.size():
+		bantu.append("L%d=%d" % [i + 1, int(bantuan.get(i + 1, 0))])
+	row.append(" | ".join(bantu))
+	row.append(_rinci(awal))
+	row.append(_rinci(riwayat))
 	f.store_line(";".join(row))
 	f.close()
-	last_saved_path = ProjectSettings.globalize_path(path)
+	last_saved_path = ProjectSettings.globalize_path(CSV_PATH)
 	print("[CT] hasil disimpan ke ", last_saved_path)
 	return last_saved_path
 

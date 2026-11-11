@@ -2,6 +2,7 @@ extends "res://scripts/level_base.gd"
 ## LEVEL 1 — SEKOLAH (termasuk prolog/tutorial). Kasus: sapu kelas hilang.
 ## Diukur: ABSTRAKSI (cerita panjang Pak Joko: 1 info penting = gudang belakang, 2 basa-basi = parkiran & kantin).
 ## Fase belajar POLA: yang tahu petunjuk adalah NPC berkacamata (Nisa) — belum dinilai.
+## Partner: Kiki diperkenalkan di sini. Setelah lokasi pertama dicatat, Kiki menanyakan alasannya.
 
 
 func _init() -> void:
@@ -22,13 +23,23 @@ func _init() -> void:
 
 
 func _mulai() -> void:
-	await say([
+	var buka := [
 		["", "Pagi hari di SD Tunas Bangsa. Kamu dikenal sebagai detektif cilik paling teliti di sekolah."],
+	]
+	if partner != null:
+		speaker = partner
+		buka.append(["kiki:senang", "Pagi, Detektif {nama}! Aku Kiki, asistenmu. Aku ikut di belakangmu, ya!"])
+		buka.append(["kiki", "Kalau lupa tujuan kita, hadap ke arahku lalu tekan E. Nanti kuingatkan!"])
+	buka.append_array([
 		["", "Gunakan tombol W A S D atau tombol panah untuk berjalan."],
 		["", "Dekati seseorang atau benda sampai muncul ikon kaca pembesar, lalu tekan E (atau Spasi) untuk berbicara dan memeriksa."],
 		["", "Tekan TAB untuk membuka Buku Catatan Detektif. Tekan ESC untuk jeda."],
-		["", "Ayo mulai! Sapa Bu Rina, wali kelasmu."],
 	])
+	if partner != null and Game.TANYA_ALASAN:
+		buka.append(["kiki", "Kadang aku akan bertanya kepadamu. Pilih jawabanmu dengan W/S lalu E, atau klik saja. Jawab sejujurnya, ya. Tidak ada jawaban yang salah!"])
+	buka.append(["", "Ayo mulai! Sapa Bu Rina, wali kelasmu."])
+	await say(buka)
+	speaker = null
 	set_objective("Sapa Bu Rina, wali kelasmu")
 	tunjuk("bu_rina")
 
@@ -122,3 +133,18 @@ func _on_zone_enter(id: String) -> void:
 		reveal("item_poster1")
 		reveal("item_jejak")
 		await say([["pemain", "Hmm, ada sesuatu yang berkilau di dekat gudang. Ayo periksa!"]])
+
+
+func _alasan(momen: String, info: Dictionary) -> Dictionary:
+	if momen != "L1.abstraksi":
+		return {}
+	var opsi := []
+	match info.get("zona", ""):
+		"gudang":
+			opsi = [["info", "Pak Joko melihat anak membawa sapu ke sini"]]
+		"kantin":
+			opsi = [["basabasi", "Pak Joko bilang ada nasi kuning di sini"]]
+		"parkiran":
+			opsi = [["basabasi", "Pak Joko bilang ada kucing di sini"]]
+	opsi.append_array([["dekat", "Tempat ini yang paling dekat"], ["jelajah", "Aku mau memeriksa semua tempat"], ["asal", "Asal jalan saja"]])
+	return {"tanya": "Eh, Detektif, kenapa kita ke sini dulu?", "opsi": opsi}
